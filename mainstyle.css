@@ -1,0 +1,51 @@
+body {
+    background-color: rgb(27, 29, 27);
+}
+
+a{
+    color:  antiquewhite;
+    text-decoration: none;
+}
+
+div.updateHeader {
+    border-radius: 15px;
+    background-color: rgb(69, 69, 69);
+    width: 75%;
+    display: inline-grid;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+    height: 200px;
+}
+
+h1.updateText {
+    color: red;
+    font-weight: 2000;
+}
+
+div.videos {
+    width: 75%;
+    background-color: gray;
+    align-items: center;
+    justify-content: center;
+}
+
+section.content {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: space-between;
+    width: 70%;
+    gap: 10px;
+}
+
+*.itemVideo { 
+    flex: calc(30% - 10px);
+    align-content: center;
+}
+
+p.artcount {
+    color: white;
+    position: fixed;
+    bottom: 0;
+    left: 5;
+}
