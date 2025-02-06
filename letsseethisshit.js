@@ -1,22 +1,32 @@
-const username = sessionStorage.getItem('username');
+//Grabbing elements from another page
+const username = sessionStorage.getItem('username') || 'powerguido';
+var daterange = sessionStorage.getItem('daterange');
+sessionStorage.clear(); //clearing them for when you reload the page, avoids conflict, i guess
+daterange = daterange==null ? 24 : parseInt(daterange);
+const today = new Date(Date.now() - (daterange * 60 * 60 * 1000)).toISOString().slice(0, 13); //Calculating the time range
+
+//defining all the arrays, globally
 var allTheSauces = [];
 var allTheArtists = [];
 var unwantedTags = ['sound_warning', 'conditional_dnp', 'artist-unknown', 'epilepsy_warning', 'third-party_edit'];
-var daterangeraw = sessionStorage.getItem('daterange');
-const daterange = daterangeraw==null ? 24 : parseInt(daterangeraw);
-sessionStorage.clear();
 
+//grabbing the elements from the page
+const updateText = document.querySelector('h1.updateText');
+const progressText = document.querySelector('p.progressText');
+const contentArea = document.querySelector('section.content');
+const elementArtCount = document.querySelector('p.artcount');
+
+console.log("Counting posts from: " + today);
 console.log('Hours range: ' + daterange);
-console.log(username)
+console.log('Username: ' + username);
 
 async function vamoLa() {
 
     //TODO: Make a fetch for each page of results, preferably a recursive loop. The max one page can display is 319 posts.
-    console.log('Username: ' + username);
     //fetching api in json form, but giving myself an "id", otherwise the site won't let me.
-    const responseFavs = await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3Dfav%3A${username}%26limit%3D319`);
-
-    const favPosts = await responseFavs.json();
+    const favPosts = 
+    await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3Dfav%3A${username}%26limit%3D319`)
+    .then(r => r.json());
     console.log(favPosts.posts.length)
     const postArtists = favPosts.posts.map(el => el.tags.artist); //taking each element from all of the favorites and getting the artist tag
 
@@ -37,22 +47,18 @@ function seriousCleanup(artists){
 
 async function getThemBoy(){
 
-    var today = new Date(Date.now() - (daterange * 60 * 60 * 1000)).toISOString().split(':')[0]; //Calculating the time range
-    console.log("Counting posts from: " + today);
-    const updateText = document.querySelector('h1.updateText');
-    const progressText = document.querySelector('p.progressText');
-    const contentArea = document.querySelector('section.content');
-    const elementArtCount = document.querySelector('p.artcount');
     var artCount = allTheArtists.length - 1;
     
 
     for(let number = 0; number < allTheArtists.length; number++){
 
         elementArtCount.innerHTML = `Artists remaining: ${artCount}`;
-        await new Promise(r => setTimeout(r, 400));
-        
-        //encoded the url, because the special symbols(&, :, =, etc.) would've been perceived as part of the proxy, instead of the query
-        let lastPostTemp = await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${allTheArtists[number]}%26limit%3D1`);
+        //await new Promise(r => setTimeout(r, 250));
+
+        proxyvariation = number&1 ? '' : '-2';
+
+        //encoded the url, because the special symbols(&, :, =, etc.) would've been perceived as part of the proxy url, instead of the query
+        let lastPostTemp =  await fetch(`https://updater-backend${proxyvariation}.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${allTheArtists[number]}%26limit%3D1`);
         let lastPostTempJson = await lastPostTemp.json();
         let postDateRaw = lastPostTempJson.posts.map(el => el.created_at);
         let postDate = postDateRaw[0].split(':')[0];
@@ -70,7 +76,6 @@ async function getThemBoy(){
             const artistArea = document.createElement('a');
             artistArea.classList.add('itemVideo');
             artistArea.setAttribute('href', `https://www.e621.net/posts?tags=${allTheArtists[number]}`);
-            artistArea.setAttribute('target', '_blank')
             const artistText = document.createTextNode(allTheArtists[number]);
 
             progressText.style.color = 'green'
