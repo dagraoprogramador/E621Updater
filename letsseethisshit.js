@@ -27,21 +27,21 @@ async function vamoLa() {
     const favPosts = 
     await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3Dfav%3A${username}%26limit%3D319`)
     .then(r => r.json());
-    console.log(favPosts.posts.length)
-    const postArtists = favPosts.posts.map(el => el.tags.artist); //taking each element from all of the favorites and getting the artist tag
+    console.log("Favorite posts count: " + favPosts.posts.length)
+    const postArtists = favPosts.posts.map(el => el.tags.artist); //taking each element from all of the favorites and putting the artist tag in an array
 
     seriousCleanup(postArtists);
 
-    console.log('All the artists: ' + allTheArtists.length);
+    console.log('All the artists: ' + allTheArtists);
 };
 
 function seriousCleanup(artists){
 
-    artists.forEach((artgroup) => {//for each array of artists, filter the objects that passes these conditions
-        var acceptedArtists = artgroup.filter((artist) => artist && !unwantedTags.includes(artist) && !allTheArtists.includes(artist));
-        acceptedArtists.forEach(el => allTheArtists.push(el)); //because the filter returns an array, i extract each object
-    });
-    console.log(allTheArtists.length);
+    //Set is faster to lookup, and can't have duplicates
+    const uniqueartists = new Set(artists.flatMap(rawartists => rawartists)//flatMap dismantles the arrays into it's objects, adding them to a new array
+    .filter(artist => artist && !unwantedTags.includes(artist)));
+    allTheArtists = [...uniqueartists]//the three dots is to add the objects in the array to the artists, instead of the whole array
+    console.log('How many artists: ' + allTheArtists.length);
     getThemBoy();
 };
 
