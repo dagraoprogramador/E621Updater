@@ -40,7 +40,7 @@ function seriousCleanup(artists){
     //Set is faster to lookup, and can't have duplicates
     const uniqueartists = new Set(artists.flatMap(rawartists => rawartists)//flatMap dismantles the arrays into it's objects, adding them to a new array
     .filter(artist => artist && !unwantedTags.includes(artist)));
-    allTheArtists = [...uniqueartists]//the three dots is to add the objects in the array to the artists, instead of the whole array
+    allTheArtists = [...uniqueartists]//the three dots is to add the objects of the array to the artists, instead of the whole array
     console.log('How many artists: ' + allTheArtists.length);
     getThemBoy();
 };
@@ -53,15 +53,15 @@ async function getThemBoy(){
     for(let number = 0; number < allTheArtists.length; number++){
 
         elementArtCount.innerHTML = `Artists remaining: ${artCount}`;
-        //await new Promise(r => setTimeout(r, 250));
 
         proxyvariation = number&1 ? '' : '-2';
 
         //encoded the url, because the special symbols(&, :, =, etc.) would've been perceived as part of the proxy url, instead of the query
         let lastPostTemp =  await fetch(`https://updater-backend${proxyvariation}.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${allTheArtists[number]}%26limit%3D1`);
+        
         let lastPostTempJson = await lastPostTemp.json();
         let postDateRaw = lastPostTempJson.posts.map(el => el.created_at);
-        let postDate = postDateRaw[0].split(':')[0];
+        let postDate = postDateRaw[0].slice(0, 13);
         console.log(allTheArtists[number] + " last post: " + postDate);
 
         progressText.innerHTML = (allTheArtists[number]);
