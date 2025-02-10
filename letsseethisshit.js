@@ -21,7 +21,6 @@ console.log('Hours range: ' + daterange);
 console.log('Username: ' + username);
 
 async function vamoLa() {
-
     //TODO: Make a fetch for each page of results, preferably a recursive loop. The max one page can display is 319 posts.
     //fetching api in json form, but giving myself an "id", otherwise the site won't let me.
     const favPosts = 
@@ -29,69 +28,59 @@ async function vamoLa() {
     .then(r => r.json());
     console.log("Favorite posts count: " + favPosts.posts.length)
     const postArtists = favPosts.posts.map(el => el.tags.artist); //taking each element from all of the favorites and putting the artist tag in an array
-
+    
     seriousCleanup(postArtists);
-
-    console.log('All the artists: ' + allTheArtists);
 };
 
 function seriousCleanup(artists){
-
     //Set is faster to lookup, and can't have duplicates
     const uniqueartists = new Set(artists.flatMap(rawartists => rawartists)//flatMap dismantles the arrays into it's objects, adding them to a new array
     .filter(artist => artist && !unwantedTags.includes(artist)));
     allTheArtists = [...uniqueartists]//the three dots is to add the objects of the array to the artists, instead of the whole array
     console.log('How many artists: ' + allTheArtists.length);
+    console.log('All the artists: \n' + allTheArtists.map((el, index) => `${index+1} - ${el}`).join("\n"));//Makes it more readable    
     getThemBoy();
 };
 
 async function getThemBoy(){
-
-    var artCount = allTheArtists.length - 1;
     
-
-    for(let number = 0; number < allTheArtists.length; number++){
-
-        elementArtCount.innerHTML = `Artists remaining: ${artCount}`;
-
-        proxyvariation = number&1 ? '' : '-2';
-
-        //encoded the url, because the special symbols(&, :, =, etc.) would've been perceived as part of the proxy url, instead of the query
-        let lastPostTemp =  await fetch(`https://updater-backend${proxyvariation}.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${allTheArtists[number]}%26limit%3D1`);
+    var artCount = allTheArtists.length--;
+    
+    for(const artist of allTheArtists){
         
-        let lastPostTempJson = await lastPostTemp.json();
-        let postDateRaw = lastPostTempJson.posts.map(el => el.created_at);
-        let postDate = postDateRaw[0].slice(0, 13);
-        console.log(allTheArtists[number] + " last post: " + postDate);
-
-        progressText.innerHTML = (allTheArtists[number]);
+        elementArtCount.innerHTML = `Artists remaining: ${artCount}`;
+        
+        proxyvariation = artCount&1 ? '' : '-2';
+        
+        //encoded the url, because the special symbols(&, :, =, etc.) would've been perceived as part of the proxy url, instead of the query
+        const postdateraw =  await fetch(`https://updater-backend${proxyvariation}.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${artist}%26limit%3D1`)
+        .then(r => r.json());
+        let postdate = postdateraw.posts[0]?.created_at?.slice(0, 13);
+        console.log(artist + ' last post was in: ' + postdate);
+        
+        progressText.innerHTML = (artist);
         progressText.style.color = 'red';
         artCount--;
-
-        if(postDate >= today){
-            console.log('There has been a new post, from: ' + allTheArtists[number]);
+        
+        if(postdate >= today){
+            console.log('There has been a new post, from: ' + artist);
             updateText.innerHTML = 'There has been an update';
             updateText.style.color = 'green';
-
+            
             const artistArea = document.createElement('a');
             artistArea.classList.add('itemVideo');
-            artistArea.setAttribute('href', `https://www.e621.net/posts?tags=${allTheArtists[number]}`);
-            const artistText = document.createTextNode(allTheArtists[number]);
-
+            artistArea.setAttribute('href', `https://www.e621.net/posts?tags=${artist}`);
+            const artistText = document.createTextNode(artist);
+            
             progressText.style.color = 'green'
             
             artistArea.appendChild(artistText);
-            contentArea.appendChild(artistArea);
-            
-        }
-        
-        
-
-    }
+            contentArea.appendChild(artistArea);           
+        };
+    };
     
     progressText.innerHTML = 'All up to date!';
-    progressText.style.color = 'Black';
-    
+    progressText.style.color = 'Black';   
 }
 
 
