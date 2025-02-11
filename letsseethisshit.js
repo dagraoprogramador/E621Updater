@@ -16,6 +16,9 @@ const progressText = document.querySelector('p.progressText');
 const contentArea = document.querySelector('section.content');
 const elementArtCount = document.querySelector('p.artcount');
 
+let elementusername = document.querySelector('p.username');
+elementusername.innerHTML = `Displaying for: ${username}`
+
 console.log("Counting posts from: " + today);
 console.log('Hours range: ' + daterange);
 console.log('Username: ' + username);
@@ -44,10 +47,12 @@ function seriousCleanup(artists){
 
 async function getThemBoy(){
     
-    var artCount = allTheArtists.length--;
+    var artCount = allTheArtists.length;
+    console.log("Amount of artists: " + artCount)
     
     for(const artist of allTheArtists){
         
+        artCount--;
         elementArtCount.innerHTML = `Artists remaining: ${artCount}`;
         
         proxyvariation = artCount&1 ? '' : '-2';
@@ -60,7 +65,6 @@ async function getThemBoy(){
         
         progressText.innerHTML = (artist);
         progressText.style.color = 'red';
-        artCount--;
         
         if(postdate >= today){
             console.log('There has been a new post, from: ' + artist);
