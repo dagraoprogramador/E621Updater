@@ -6,7 +6,6 @@ daterange = daterange==null ? 24 : parseInt(daterange);
 const today = new Date(Date.now() - (daterange * 60 * 60 * 1000)).toISOString().slice(0, 13); //Calculating the time range
 
 //defining all the arrays, globally
-var allTheSauces = [];
 var allTheArtists = [];
 var unwantedTags = ['sound_warning', 'conditional_dnp', 'artist-unknown', 'epilepsy_warning', 'third-party_edit'];
 
@@ -16,20 +15,19 @@ const progressText = document.querySelector('p.progressText');
 const contentArea = document.querySelector('section.content');
 const elementArtCount = document.querySelector('p.artcount');
 
+//Displaying the username of who's being searched to avoid confusion
 let elementusername = document.querySelector('p.username');
-elementusername.innerHTML = `Displaying for: ${username}`
+elementusername.innerHTML = `Displaying for: ${username}`;
 
 console.log("Counting posts from: " + today);
 console.log('Hours range: ' + daterange);
-console.log('Username: ' + username);
 
 async function vamoLa() {
     //TODO: Make a fetch for each page of results, preferably a recursive loop. The max one page can display is 319 posts.
-    //fetching api in json form, but giving myself an "id", otherwise the site won't let me.
     const favPosts = 
     await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3Dfav%3A${username}%26limit%3D319`)
     .then(r => r.json());
-    console.log("Favorite posts count: " + favPosts.posts.length)
+    console.log("Favorite posts count: " + favPosts.posts.length);
     const postArtists = favPosts.posts.map(el => el.tags.artist); //taking each element from all of the favorites and putting the artist tag in an array
     
     seriousCleanup(postArtists);
@@ -50,19 +48,25 @@ async function getThemBoy(){
     var artCount = allTheArtists.length;
     console.log("Amount of artists: " + artCount)
     
+    
     for(const artist of allTheArtists){
+        //PUT IT IN AN EXTERNAL FUNCTION, THEN CALL IT IN THE FOR LOOP, IT'LL BE FASTER, JUST FIND A WAY TO DELAY EACH ITTERATION
         
         artCount--;
         elementArtCount.innerHTML = `Artists remaining: ${artCount}`;
         
         proxyvariation = artCount&1 ? '' : '-2';
         
+        let start = performance.now();
         //encoded the url, because the special symbols(&, :, =, etc.) would've been perceived as part of the proxy url, instead of the query
         const postdateraw =  await fetch(`https://updater-backend${proxyvariation}.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${artist}%26limit%3D1`)
         .then(r => r.json());
-        let postdate = postdateraw.posts[0]?.created_at?.slice(0, 13);
+        let end = performance.now();
+        console.log(`Time elapsed: ${end - start}`);
+        const postdate = postdateraw.posts[0]?.created_at?.slice(0, 13);
         console.log(artist + ' last post was in: ' + postdate);
         
+
         progressText.innerHTML = (artist);
         progressText.style.color = 'red';
         
@@ -76,7 +80,7 @@ async function getThemBoy(){
             artistArea.setAttribute('href', `https://www.e621.net/posts?tags=${artist}`);
             const artistText = document.createTextNode(artist);
             
-            progressText.style.color = 'green'
+            progressText.style.color = 'green';
             
             artistArea.appendChild(artistText);
             contentArea.appendChild(artistArea);           
