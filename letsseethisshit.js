@@ -76,7 +76,7 @@ async function getThemBoy(){
 
             const artistArea = document.createElement('a');
             artistArea.classList.add('itemVideo');
-            artistArea.setAttribute('href', `e621.net/posts?tags=${artist}`);
+            artistArea.setAttribute('href', `https://e621.net/posts?tags=${artist}`);
             artistArea.textContent = artist;
             contentArea.appendChild(artistArea);
         }
