@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const response = await fetch(`https://updater-backend.vercel.app/api/proxy?url=https://e621.net/users/${username}.json`);
-            const data = await response.json();
 
             if (response.status === 404) {
                 usertext.innerHTML = "Username not found";
