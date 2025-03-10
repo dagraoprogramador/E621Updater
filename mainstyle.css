@@ -1,3 +1,8 @@
+* {
+    margin: 0;
+    border: 0;
+}
+
 body {
     background-color: rgb(27, 29, 27);
 }
@@ -11,7 +16,8 @@ div.updateHeader {
     border-radius: 15px;
     background-color: rgb(69, 69, 69);
     width: 75%;
-    display: inline-grid;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     margin: 20px auto;
@@ -21,12 +27,14 @@ div.updateHeader {
 h1.updateText {
     color: red;
     font-weight: 2000;
+    margin-bottom: 25px;
 }
 
 div.videos {
-    width: 75%;
+    margin: auto;
+    width: 50%;
     background-color: gray;
-    align-items: center;
+    justify-items: center;
     justify-content: center;
 }
 
@@ -34,8 +42,9 @@ section.content {
     display: flex;
     flex-wrap: wrap; 
     justify-content: space-between;
-    width: 70%;
     gap: 10px;
+    border: 0px;
+    margin: 10%;
 }
 
 *.itemVideo { 
@@ -46,10 +55,8 @@ section.content {
 div.infoarea {
     color: white;
     position: fixed;
-    bottom: 0;
-    left: 5;
-}
-
-.username{
-    margin-bottom: -10px;
+    bottom: 5px;
+    left: 5px;
+    user-select: none;
+    font-size: 10px;
 }

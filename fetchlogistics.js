@@ -77,7 +77,8 @@ async function getThemBoy(){
             const artistArea = document.createElement('a');
             artistArea.classList.add('itemVideo');
             artistArea.href = `https://e621.net/posts?tags=${artist}`;
-            artistArea.target = '_blank'
+            artistArea.target = '_blank';
+            artistArea.onclick = 'focus()';
             artistArea.textContent = artist;
             contentArea.appendChild(artistArea);
         }
