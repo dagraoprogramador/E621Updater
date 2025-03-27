@@ -25,14 +25,15 @@ async function fetchingJob() {
     
     results.forEach(post => {
         if (post.created_at.slice(0,13) >= acceptabledate){
-            addPostThumbnail(post.tags.artist.filter(artist => !unwantedtags.includes(artist)), post.sample.url)
+            addPostThumbnail(post.tags.artist.filter(artist => !unwantedtags.includes(artist)), post.sample.url, post.id)
         }
     })
 }
 
 
-function addPostThumbnail(artistname, imageurl) { console.log(`New post from: ${artistname}`);
+function addPostThumbnail(artistname, imageurl, sourceurl) { console.log(`New post from: ${artistname}`);
     const hyperlink = document.createElement("a")
+    hyperlink.href = sourceurl
     const wholethumbnail = document.createElement("div");
     wholethumbnail.classList.add("content");
     const thumbimage = document.createElement("img");
