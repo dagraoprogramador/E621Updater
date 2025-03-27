@@ -33,7 +33,7 @@ async function fetchingJob() {
 
 function addPostThumbnail(artistname, imageurl, sourceurl) { console.log(`New post from: ${artistname}`);
     const hyperlink = document.createElement("a")
-    hyperlink.href = `e621.net/posts/${sourceurl}`
+    hyperlink.href = `https://e621.net/posts/${sourceurl}`
     const wholethumbnail = document.createElement("div");
     wholethumbnail.classList.add("content");
     const thumbimage = document.createElement("img");
