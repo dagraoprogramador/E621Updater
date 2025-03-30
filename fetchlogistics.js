@@ -5,7 +5,7 @@ var alltheartists = [];
 const unwantedtags = ['sound_warning', 'conditional_dnp', 'artist-unknown', 'epilepsy_warning', 'third-party_edit'];
 
 daterange = daterange==null ? 24 : parseInt(daterange);
-var acceptabledate = new Date(Date.now() - (24 * 60 * 60 * 1000)).toISOString().slice(0, 13);
+var acceptabledate = new Date(Date.now() - (daterange * 60 * 60 * 1000)).toISOString().slice(0, 13);
 console.log("Today is " + acceptabledate)
 
 
