@@ -16,6 +16,7 @@ div#titlearea {
     height: 150px;
     margin-top: 50px;
     margin-left: 20%;
+    margin-right: 20%;
     border-radius: 10px;
     background-color: rgb(59, 61, 65);
 }
@@ -29,6 +30,25 @@ h1#titleheader {
 p#subtitle {
     font-family: sans-serif;
     margin-top: 5px;
+}
+
+div#togglearea {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+p#toggletext {
+    font-family: sans-serif;
+    font-size: 20px;
+    color: white;
+}
+
+input#animationtoggle {
+    height: 15px;
+    width: 15px;
+    align-self: center;
+    margin-left: 5px;
 }
 
 div#allcontent {
@@ -49,6 +69,8 @@ div.content {
 
 img.thumbnail {
     width: 200px;
+    height: 300px;
+    object-fit: cover;
 }
 
 p.thumbtext {
