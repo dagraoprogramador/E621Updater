@@ -1,12 +1,7 @@
-/*TODO: Create a second proxy, again, to speed things up, currently it takes half a second to fetch each post, which tracks to 
-e621's fetch policy. So just alternate between fetching from one proxy to the other.
-
-TODO2: Make the tagsearch button halt all current operations, so that you can press it as soon as it loads without any trouble
-*/
 //Getting information from the last page
-const username = sessionStorage.getItem('username') || 'powerguido';
+const username = localStorage.getItem('username') || 'powerguido';
 console.log("Username being searched: " + username);
-var daterange = sessionStorage.getItem('daterange');
+var daterange = localStorage.getItem('daterange');
 
 //getting the document objects
 var contentarea = document.querySelector("div#allcontent");
@@ -28,30 +23,34 @@ console.log("Searching for posts made after " + acceptabledate + ", as i should"
 
 
 async function fetchingJob() {
+    await tagsearch();
     const title = document.querySelector("h1#titleheader");
+    const subtitle = document.querySelector("p#subtitle");
     title.innerHTML = "Searching for updates";
     title.style.color = "red";
-    const subtitle = document.querySelector("p#subtitle");
-
+    subtitle.innerHTML = "Maybe wait for a while"
+    
     //resetting all the content
     contentarea.remove();
     contentarea = document.createElement('div');
     contentarea.id = "allcontent"
     document.body.appendChild(contentarea)
-
+    
     await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3Dfav%3A${username}%26limit%3D320`)
     .then(r => r.json()).then(favposts => favposts.posts.forEach(post => alltheartists.push(post.tags.artist)));
     const tempartists = new Set(alltheartists.flat(Infinity).filter(artist => !unwantedartists.includes(artist)));
     alltheartists = Array.from(tempartists);
     console.log(alltheartists.map((el, index) => `${index+1} - ${el}`).join("\n"));
+    
+    
+    var fetchtoggle = '';
+    const querytags = requiredtags.join("%2B");
 
-
-    const querytags = requiredtags.join("%2B")
     const artpromises = alltheartists.map(artist => {
-        return fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${querytags}%2B${artist}%26limit%3D5`)
-        .then(r => r.json()).then(artist => {//TODO: Put the tag filtration system here, in a for loop, looping through each post until you get one that meets the requirements
-            return [artist.posts[0], artist.posts[1], artist.posts[2], artist.posts[3], artist.posts[4]];
-        });//TODO: If you become somewhat competent, make this more efficient, right now it's fetching all the artist, even if you specify one in the tags... if querytags contains artist, turn artist blank
+        if (requiredtags.includes(`-${artist}`)) return; //If artist is excluded, don't even search it.
+        fetchtoggle = fetchtoggle==='' ? '-2' : '';
+        return fetch(`https://updater-backend${fetchtoggle}.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${querytags}%2B${artist}%26limit%3D5`)
+        .then(r => r.json()).then(artist => artist.posts[0]);
     });
 
     const results = await Promise.all(artpromises).then(p => p.flat(1));
@@ -60,12 +59,12 @@ async function fetchingJob() {
     };
 
     results.forEach(post => {
-        if (!post) return; //Reminder to erase this when you put the tag filtration system up there, there won't be empty objects then
+        if (!post) return;
         title.innerHTML = "There has been a new update!";
         title.style.color = "green";
         subtitle.hidden = true;
-        
-//Lesson: Turns out an array with arrays gets turned into an object with names as the arrays, so you have to extract the values(arrays) first
+
+//Lesson: In json array with arrays gets turned into an array with name objects as the arrays, so you have to extract the values(arrays) first, "Object.values"
         if (post.created_at.slice(0,13) >= acceptabledate){
             addPostThumbnail(post.tags.artist.filter(artist => !unwantedartists.includes(artist)).join(", "), post.sample.url, post.id, post.file.ext);
         };
@@ -86,7 +85,7 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
     thumbtext.classList.add("thumbtext");
 
     /*
-    When i need to debug shit and don't want to risk anyone peeking at depravities on the puter*/
+    When i need to debug shit and don't want to risk anyone peeking at depravities on the puter
     var tempimage;
     switch (Math.floor(Math.random() * 5)){
         case 1:
@@ -102,8 +101,10 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
             tempimage = "https://files.worldwildlife.org/wwfcmsprod/images/Maned_Wolf_WWwinter2023/magazine_medium/6r8hu6p5qh_Maned_Wolf_WWwinter2023.jpg"
             break;
     };
+    
     thumbimage.src = tempimage;
-    //thumbimage.src = imageurl;
+    */
+    thumbimage.src = imageurl;
     thumbtext.innerHTML = artistname;
     wholethumbnail.appendChild(thumbimage);
     wholethumbnail.appendChild(thumbtext);
@@ -111,30 +112,35 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
     contentarea.appendChild(hyperlink);
 }
 
+
 tagsubmit.addEventListener('click', async () => {
     tagsubmit.disabled = true;
-    var blacklisttags = taglist.value.split(" ")
+    await tagsearch();
+    await fetchingJob();
+    tagsubmit.disabled = false;
+});
 
+async function tagsearch() {
+    var inputtags = taglist.value.split(" ")
+    console.log("Tags in input: " + inputtags)
     var listedtags = [];
 
-    await Promise.all(blacklisttags.map(async tag => {
+    await Promise.all(inputtags.map(async tag => {
         await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${tag}%26limit%3D1`)
         .then(page => page.json()).then(res => {
-            if (res.status === 404) {
-                tagtext.innerHTML = `${tag} isn't a valid tag, bitch`
+            if (res.posts[0] != []) {
+                tagtext.innerHTML = `not a valid tag, bitch`
             } else {
                 listedtags.push(tag);
             };
         })
     }))
-    console.log("Listed tags: " + listedtags)
 
-    if (listedtags.length === blacklisttags.length) {
-        requiredtags = blacklisttags;
-        await fetchingJob();
-        tagsubmit.disabled = false;
+    if (listedtags.length === inputtags.length) {
+        requiredtags = inputtags;
     }
-});
+    
+}
 
 
 fetchingJob();
