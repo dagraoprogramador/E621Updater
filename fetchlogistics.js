@@ -127,7 +127,7 @@ async function tagsearch() {
     await Promise.all(inputtags.map(async tag => {
         await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${tag}%26limit%3D1`)
         .then(page => page.json()).then(res => {
-            if (res.posts[0] != []) {
+            if (res.posts[0] == []) {
                 tagtext.innerHTML = `not a valid tag, bitch`
             } else {
                 listedtags.push(tag);
