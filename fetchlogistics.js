@@ -115,7 +115,6 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
 
 tagsubmit.addEventListener('click', async () => {
     tagsubmit.disabled = true;
-    await tagsearch();
     await fetchingJob();
     tagsubmit.disabled = false;
 });
