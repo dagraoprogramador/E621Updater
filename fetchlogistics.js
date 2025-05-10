@@ -1,5 +1,5 @@
 //Getting information from the last page
-const username = localStorage.getItem('username') || 'powerguido';
+const username = localStorage.getItem('username');
 console.log("Username being searched: " + username);
 var daterange = localStorage.getItem('daterange');
 
@@ -37,7 +37,7 @@ async function fetchingJob() {
     document.body.appendChild(contentarea)
     
     await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3Dfav%3A${username}%26limit%3D320`)
-    .then(r => r.json()).then(favposts => favposts.posts.forEach(post => alltheartists.push(post.tags.artist)));
+    .then(r => r.json()).then(artpage => artpage.posts.forEach(post => alltheartists.push(post.tags.artist)));
     const tempartists = new Set(alltheartists.flat(Infinity).filter(artist => !unwantedartists.includes(artist)));
     alltheartists = Array.from(tempartists);
     console.log(alltheartists.map((el, index) => `${index+1} - ${el}`).join("\n"));
@@ -48,7 +48,7 @@ async function fetchingJob() {
 
     const artpromises = alltheartists.map(artist => {
         if (requiredtags.includes(`-${artist}`)) return; //If artist is excluded, don't even search it.
-        fetchtoggle = fetchtoggle==='' ? '-2' : '';
+        fetchtoggle = fetchtoggle === '' ? '-2' : '';
         return fetch(`https://updater-backend${fetchtoggle}.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${querytags}%2B${artist}%26limit%3D5`)
         .then(r => r.json()).then(artist => artist.posts[0]);
     });
@@ -84,26 +84,27 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
     const thumbtext = document.createElement("p");
     thumbtext.classList.add("thumbtext");
 
-    /*
-    When i need to debug shit and don't want to risk anyone peeking at depravities on the puter
-    var tempimage;
-    switch (Math.floor(Math.random() * 5)){
+    
+    // When i need to debug shit and don't want to risk anyone peeking at depravities on the puter
+    switch (Math.floor(Math.random() * 6)){
         case 1:
-            tempimage = "https://r4.wallpaperflare.com/wallpaper/81/388/855/anime-cityscape-landscape-scenery-wallpaper-a334226641c935cf2b3701ca2a245274.jpg"
+            imageurl = "https://r4.wallpaperflare.com/wallpaper/81/388/855/anime-cityscape-landscape-scenery-wallpaper-a334226641c935cf2b3701ca2a245274.jpg"
             break;
         case 2:
-            tempimage = "https://www.endangeredwolfcenter.org/wp-content/uploads/2021/11/MJS_5861-Daisy_3-1.jpg.webp"
+            imageurl = "https://www.endangeredwolfcenter.org/wp-content/uploads/2021/11/MJS_5861-Daisy_3-1.jpg.webp"
             break;
         case 3:
-            tempimage = "https://i.pinimg.com/474x/c5/7f/32/c57f3237ffca4c4b8dd563e6dd94fed4.jpg"
+            imageurl = "https://i.pinimg.com/474x/c5/7f/32/c57f3237ffca4c4b8dd563e6dd94fed4.jpg"
             break
         case 4:
-            tempimage = "https://files.worldwildlife.org/wwfcmsprod/images/Maned_Wolf_WWwinter2023/magazine_medium/6r8hu6p5qh_Maned_Wolf_WWwinter2023.jpg"
+            imageurl = "https://files.worldwildlife.org/wwfcmsprod/images/Maned_Wolf_WWwinter2023/magazine_medium/6r8hu6p5qh_Maned_Wolf_WWwinter2023.jpg"
             break;
+
+        default:
+            imageurl = "https://fotos.amomeupet.org/uploads/stories/story_164_659d548852c56.webp"
+
     };
     
-    thumbimage.src = tempimage;
-    */
     thumbimage.src = imageurl;
     thumbtext.innerHTML = artistname;
     wholethumbnail.appendChild(thumbimage);
@@ -115,31 +116,34 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
 
 tagsubmit.addEventListener('click', async () => {
     tagsubmit.disabled = true;
+    tagfetch = false;
     await tagsearch();
-    await fetchingJob();
+    if (tagfetch){
+        await fetchingJob();
+    }
     tagsubmit.disabled = false;
 });
 
 async function tagsearch() {
     var inputtags = taglist.value.split(" ")
     console.log("Tags in input: " + inputtags)
-    var listedtags = [];
+    var invalidtags = [];
 
     await Promise.all(inputtags.map(async tag => {
         await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${tag}%26limit%3D1`)
         .then(page => page.json()).then(res => {
-            if (res.posts[0] != []) {
-                tagtext.innerHTML = `not a valid tag, bitch`
-            } else {
-                listedtags.push(tag);
-            };
-        })
-    }))
+            if (res.posts[0] == null) {
+                invalidtags.push(tag)
+                tagtext.innerHTML = `"${invalidtags.join(', ')}" isn't valid, bitch`
+            }})
+        }))
+        
+        if (invalidtags.length == 0){
+            tagfetch = true
+            requiredtags = inputtags;
+            tagtext.innerHTML = "Bon Apetit"
+        }
 
-    if (listedtags.length === inputtags.length) {
-        requiredtags = inputtags;
-    }
-    
 }
 
 
