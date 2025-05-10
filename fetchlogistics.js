@@ -85,7 +85,7 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
     thumbtext.classList.add("thumbtext");
 
     
-    // When i need to debug shit and don't want to risk anyone peeking at depravities on the puter
+    /* When i need to debug shit and don't want to risk anyone peeking at depravities on the puter
     switch (Math.floor(Math.random() * 6)){
         case 1:
             imageurl = "https://r4.wallpaperflare.com/wallpaper/81/388/855/anime-cityscape-landscape-scenery-wallpaper-a334226641c935cf2b3701ca2a245274.jpg"
@@ -103,7 +103,7 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
         default:
             imageurl = "https://fotos.amomeupet.org/uploads/stories/story_164_659d548852c56.webp"
 
-    };
+    };*/
     
     thumbimage.src = imageurl;
     thumbtext.innerHTML = artistname;
@@ -116,11 +116,7 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
 
 tagsubmit.addEventListener('click', async () => {
     tagsubmit.disabled = true;
-    tagfetch = false;
-    await tagsearch();
-    if (tagfetch){
-        await fetchingJob();
-    }
+    await fetchingJob();
     tagsubmit.disabled = false;
 });
 
@@ -132,18 +128,18 @@ async function tagsearch() {
     await Promise.all(inputtags.map(async tag => {
         await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${tag}%26limit%3D1`)
         .then(page => page.json()).then(res => {
-            if (res.posts[0] == null) {
-                invalidtags.push(tag)
-                tagtext.innerHTML = `"${invalidtags.join(', ')}" isn't valid, bitch`
-            }})
-        }))
-        
-        if (invalidtags.length == 0){
-            tagfetch = true
-            requiredtags = inputtags;
-            tagtext.innerHTML = "Bon Apetit"
-        }
+            if (res.posts[0] == []) {
+                tagtext.innerHTML = `not a valid tag, bitch`
+            } else {
+                listedtags.push(tag);
+            };
+        })
+    }))
 
+    if (listedtags.length === inputtags.length) {
+        requiredtags = inputtags;
+    }
+    
 }
 
 
