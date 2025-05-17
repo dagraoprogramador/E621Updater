@@ -23,7 +23,6 @@ console.log("Searching for posts made after " + acceptabledate + ", as i should"
 
 
 async function fetchingJob() {
-    await tagsearch();
     const title = document.querySelector("h1#titleheader");
     const subtitle = document.querySelector("p#subtitle");
     title.innerHTML = "Searching for updates";
@@ -116,7 +115,7 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
 
 tagsubmit.addEventListener('click', async () => {
     tagsubmit.disabled = true;
-    await fetchingJob();
+    await tagsearch();
     tagsubmit.disabled = false;
 });
 
@@ -128,18 +127,19 @@ async function tagsearch() {
     await Promise.all(inputtags.map(async tag => {
         await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${tag}%26limit%3D1`)
         .then(page => page.json()).then(res => {
-            if (res.posts[0] == []) {
-                tagtext.innerHTML = `not a valid tag, bitch`
-            } else {
-                listedtags.push(tag);
+            if (res.posts[0] == null) {
+                invalidtags.push(tag)
+            } else{
+              requiredtags.push(tag)  
             };
         })
     }))
 
-    if (listedtags.length === inputtags.length) {
-        requiredtags = inputtags;
-    }
-    
+    if (invalidtags.length > 0) {
+        tagtext.innerHTML = `${invalidtags.split(", ")} ain't valid, bitch`;
+    } else{
+        fetchingJob()
+    }    
 }
 
 
