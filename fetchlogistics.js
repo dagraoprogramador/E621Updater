@@ -16,7 +16,7 @@ var requiredtags = [];
 const unwantedartists = ['sound_warning', 'conditional_dnp', 'epilepsy_warning', 'third-party_edit'];//Idk if "artist-unknown" is a category for that, or just an artist's name
 
 //Calculating the date after which the posts will be displayed
-daterange = daterange==null ? 24 : parseInt(daterange);
+daterange = daterange == null ? 24 : parseInt(daterange);
 var acceptabledate = new Date(Date.now() - (daterange * 60 * 60 * 1000)).toISOString().slice(0, 13);
 console.log("Searching for posts made after " + acceptabledate + ", as i should");
 
@@ -28,20 +28,25 @@ async function fetchingJob() {
     title.innerHTML = "Searching for updates";
     title.style.color = "red";
     subtitle.innerHTML = "Maybe wait for a while"
-    
+
     //resetting all the content
+    var tempartists = [];
     contentarea.remove();
     contentarea = document.createElement('div');
     contentarea.id = "allcontent"
     document.body.appendChild(contentarea)
-    
-    await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3Dfav%3A${username}%26limit%3D320`)
-    .then(r => r.json()).then(artpage => artpage.posts.forEach(post => alltheartists.push(post.tags.artist)));
-    const tempartists = new Set(alltheartists.flat(Infinity).filter(artist => !unwantedartists.includes(artist)));
-    alltheartists = Array.from(tempartists);
-    console.log(alltheartists.map((el, index) => `${index+1} - ${el}`).join("\n"));
-    
-    
+
+    for (let page = 1; (tempartists.length % 319 == 0 || page == 1); page++) {
+        await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3Dfav%3A${username}%26limit%3D320%26page%3D${page}`)
+            .then(r => r.json()).then(artpage => artpage.posts.forEach(post => tempartists.push(post.tags.artist)));
+    }
+
+    console.log("Amount of favorited posts: " + alltheartists.length)
+    const artistset = new Set(tempartists.flat(Infinity).filter(artist => !unwantedartists.includes(artist)));
+    alltheartists = Array.from(artistset);
+    console.log(alltheartists.map((el, index) => `${index + 1} - ${el}`).join("\n"));
+
+
     var fetchtoggle = '';
     const querytags = requiredtags.join("%2B");
 
@@ -49,7 +54,7 @@ async function fetchingJob() {
         if (requiredtags.includes(`-${artist}`)) return; //If artist is excluded, don't even search it.
         fetchtoggle = fetchtoggle === '' ? '-2' : '';
         return fetch(`https://updater-backend${fetchtoggle}.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${querytags}%2B${artist}%26limit%3D5`)
-        .then(r => r.json()).then(artist => artist.posts[0]);
+            .then(r => r.json()).then(artist => artist.posts[0]);
     });
 
     const results = await Promise.all(artpromises).then(p => p.flat(1));
@@ -63,18 +68,18 @@ async function fetchingJob() {
         title.style.color = "green";
         subtitle.hidden = true;
 
-//Lesson: In json array with arrays gets turned into an array with name objects as the arrays, so you have to extract the values(arrays) first, "Object.values"
-        if (post.created_at.slice(0,13) >= acceptabledate){
-            addPostThumbnail(post.tags.artist.filter(artist => !unwantedartists.includes(artist)).join(", "), post.sample.url, post.id, post.file.ext);
+        //Lesson: In json array with arrays gets turned into an array with name objects as the arrays, so you have to extract the values(arrays) first, "Object.values"
+        if (post.created_at.slice(0, 13) >= acceptabledate) {
+            addPostThumbnail(post.tags.artist.filter(artist => !unwantedartists.includes(artist)).join(", "), post.sample.url, post.id);
         };
     });
 };
 
 
-function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console.log(`New post from: ${artistname}`);
+function addPostThumbnail(artistname, imageurl, sourceurl) {
+    console.log(`New post from: ${artistname}`);
     const hyperlink = document.createElement("a");
     hyperlink.classList.add('content')
-    hyperlink.classList.add((postformat=='webm' || postformat=='gif')? 'video' : 'image');
     hyperlink.href = `https://e621.net/posts/${sourceurl}`;
     const wholethumbnail = document.createElement("div");
     wholethumbnail.classList.add("thumbarea");
@@ -83,7 +88,7 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
     const thumbtext = document.createElement("p");
     thumbtext.classList.add("thumbtext");
 
-    
+
     /* When i need to debug shit and don't want to risk anyone peeking at depravities on the puter
     switch (Math.floor(Math.random() * 6)){
         case 1:
@@ -103,7 +108,7 @@ function addPostThumbnail(artistname, imageurl, sourceurl, postformat) { console
             imageurl = "https://fotos.amomeupet.org/uploads/stories/story_164_659d548852c56.webp"
 
     };*/
-    
+
     thumbimage.src = imageurl;
     thumbtext.innerHTML = artistname;
     wholethumbnail.appendChild(thumbimage);
@@ -126,20 +131,20 @@ async function tagsearch() {
 
     await Promise.all(inputtags.map(async tag => {
         await fetch(`https://updater-backend.vercel.app/api/proxy?url=https%3A%2F%2Fe621.net%2Fposts.json%3Ftags%3D${tag}%26limit%3D1`)
-        .then(page => page.json()).then(res => {
-            if (res.posts[0] == null) {
-                invalidtags.push(tag)
-            } else{
-              requiredtags.push(tag)  
-            };
-        })
+            .then(page => page.json()).then(res => {
+                if (res.posts[0] == null) {
+                    invalidtags.push(tag)
+                } else {
+                    requiredtags.push(tag)
+                };
+            })
     }))
 
     if (invalidtags.length > 0) {
         tagtext.innerHTML = `${invalidtags.split(", ")} ain't valid, bitch`;
-    } else{
+    } else {
         fetchingJob()
-    }    
+    }
 }
 
 
